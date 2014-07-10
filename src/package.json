@@ -1,0 +1,24 @@
+{
+  "name": "Async",
+  "description": "Async",
+  "version": "0.1.0",
+  "private": false,
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.2.x"
+  },
+  "dependencies": {
+    "async": "^0.9.0",
+    "express": "^4.5.1",
+    "underscore": "^1.6.0",
+    "underscore.string": "^2.3.3",
+    "mkdir": "0.0.2",
+    "optimist": "^0.6.1",
+    "method-override": "^2.0.2",
+    "body-parser": "^1.4.3",
+    "morgan": "^1.1.1",
+    "zip-stream": "^0.3.6",
+    "memory-cache": "0.0.5"
+  },
+  "devDependencies": {}
+}
