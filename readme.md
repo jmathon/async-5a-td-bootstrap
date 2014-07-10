@@ -21,12 +21,12 @@ The "search" API must read the "search-term" parameter and respond a JSON object
 
 The "download" API must read the "search-term", search for files containing the term, build a zip file containing all matched files and stream it to the user.
 
-You will have to "stress test" your API using Apache Benchmark command line tool to simulate a lot of concurent requests on your server, and then optimize it to be as fast as possible.
-
 Then : 
 
 * You must cache results for a short period of time, it will save CPU time looking in files for the same term too often
 * You must handle the case when 100 simultaneous search requests hit your server at the exact same time, it should not perform 100 search before caching the result for next requests. The first requests should trigger a seach in files while 99 other requests should quietly wait for the result of this search, only then respond the result to the user.
+
+You will have to "stress test" your API using Apache Benchmark command line tool to simulate a lot of concurent requests on your server, and then optimize it to be as fast as possible.
 
 Strongly recommanded third party node module (you can use any other usefull module you want): 
 
