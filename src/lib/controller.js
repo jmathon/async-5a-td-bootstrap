@@ -13,7 +13,7 @@ var sayHello = function(term, callback) {
     callback(null, result);
 }
 
-
+var elementDictionary = {};
 
 var searchInFiles = function (term, callback) {
     var dirPath = 'contents/files/rfc';
@@ -21,30 +21,40 @@ var searchInFiles = function (term, callback) {
 
     if(cache.get(term) != null) {
         callback(null, cache.get(term));
+        cache.put(term, cache.get(term), 600);
         return;
-    }    
+    }
+    if(elementDictionary[term] !== undefined) {
+        elementDictionary[term].push(callback);
+    } else {
+        elementDictionary[term] = [callback];
 
-    fs.readdir(dirPath, function (err, files) {
-        if(err) throw err;
+        
+        fs.readdir(dirPath, function (err, files) {
+            if(err) throw err;
 
-        async.eachLimit(files, 3, function (item, clb) {
-            var filePath = path.join(dirPath, item);
-            fs.readFile(filePath, 'utf-8', function (err, data) {
-                if(err) throw err;
+            async.eachLimit(files, 5, function (item, clb) {
+                var filePath = path.join(dirPath, item);
+                fs.readFile(filePath, 'utf-8', function (err, data) {
+                    if(err) throw err;
 
-                var match = data.match(new RegExp(term, 'g'));
-                if(match !== null && match.length > 0){
-                    fileResults.push({ file: item, count : match.length });
-                }
+                    var match = data.match(new RegExp(term, 'g'));
+                    if(match !== null && match.length > 0){
+                        fileResults.push({ file: item, count : match.length });
+                    }
 
-                clb();
+                    clb();
+                })
+            }, function () { 
+                var response = { title: 'Node Async Search', term: term, results: fileResults };
+                cache.put(term, response, 600);
+                elementDictionary[term].forEach(function(item) {
+                    item(null, response);   
+                })
+                delete elementDictionary[term];
             })
-        }, function () { 
-            var response = { title: 'Node Async Search', term: term, results: fileResults };
-            cache.put(term, response, 600);
-            callback(null, response);   
         })
-    })
+    }
 }
 
 var zipFile = function (data, callback) {

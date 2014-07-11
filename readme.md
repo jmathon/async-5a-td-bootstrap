@@ -14,8 +14,8 @@ This server has to be a very simple search engine. It must allow users to seach 
 
 Your server must expose two public API: 
 
-* http://localhost:3000/search/{search-term}
-* http://localhost:3000/download/{search-term}
+OK * http://localhost:3000/search/{search-term}
+OK * http://localhost:3000/download/{search-term}
 
 The "search" API must read the "search-term" parameter and respond a JSON object containing the list of files names where the term has been found and the count of the occurences of this term in the file. Something like { results: [{ file: "rfc1593.txt", count: 16 }] }.
 
@@ -23,8 +23,8 @@ The "download" API must read the "search-term", search for files containing the 
 
 Then : 
 
-* You must cache results for a short period of time, it will save CPU time looking in files for the same term too often
-* You must handle the case when 100 simultaneous search requests hit your server at the exact same time, it should not perform 100 search before caching the result for next requests. The first requests should trigger a seach in files while 99 other requests should quietly wait for the result of this search, only then respond the result to the user.
+OK * You must cache results for a short period of time, it will save CPU time looking in files for the same term too often
+OK * You must handle the case when 100 simultaneous search requests hit your server at the exact same time, it should not perform 100 search before caching the result for next requests. The first requests should trigger a seach in files while 99 other requests should quietly wait for the result of this search, only then respond the result to the user.
 
 You will have to "stress test" your API using Apache Benchmark command line tool to simulate a lot of concurent requests on your server, and then optimize it to be as fast as possible.
 
@@ -42,7 +42,7 @@ Strongly recommanded third party node module (you can use any other usefull modu
 Pick bonuses your want to explore : 
 
 * Add a route which allows users to add their custom text files to the "repository", the API should look like this (POST) http://localhost:3000/add/{URL_OF_FILE_TO_ADD}
-* Add a simple API Key authentication system (via an Express Middleware) to secure the two created API
+OK * Add a simple API Key authentication system (via an Express Middleware) to secure the two created API
 * For the /search/ API, add some contexte where the term has been found in the file to the JSON result (you could add the line, the sentense where the term has been found, the section of the rfc where it has been found).
 * Configure Socket.io (Websocket) to display realtime statistics of your server usage (total request count, current requests counts, terms searched, etc.)
 
