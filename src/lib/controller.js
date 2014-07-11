@@ -18,49 +18,32 @@ var sayHello = function(term, callback) {
 var searchInFiles = function (term, callback) {
     var dirPath = 'contents/files/rfc';
     var fileResults = [];
+
     if(cache.get(term) != null) {
         callback(null, cache.get(term));
         return;
-    }
-
-    var dequeueFiles = function (queue, callback) {
-        readFiles(queue.term, queue.fileName, queue.filePath, queue.fileResults, queue.lastElement, queue.callback, callback)
-    }
-
-    var readFiles = function (term, fileName, filePath, fileResults, lastElement, callback, nextCallback) {
-        fs.readFile(filePath, 'utf-8', function (err, data) {
-            if(err) throw err;
-
-            var match = data.match(new RegExp(term, 'g'));
-            if(match !== null && match.length > 0){
-                fileResults.push({ file: fileName, count : match.length });
-            }
-
-            
-            if(lastElement) {
-                var response = { title: 'Node Async Search', term: term, results: fileResults };
-                cache.put(term, response, 600);
-                callback(null, response);  
-            }
-
-            nextCallback();
-        })
-    }
-
-    var queue = async.queue(dequeueFiles, 5);
+    }    
 
     fs.readdir(dirPath, function (err, files) {
         if(err) throw err;
 
-        
-
-        var enqueue = [];
-        files.forEach (function (item) {
+        async.eachLimit(files, 3, function (item, clb) {
             var filePath = path.join(dirPath, item);
-            enqueue.push({ term: term, fileName: item, filePath: filePath, fileResults: fileResults, lastElement: (files.length - 1) === files.indexOf(item), callback: callback });
-        })
+            fs.readFile(filePath, 'utf-8', function (err, data) {
+                if(err) throw err;
 
-        queue.push(enqueue);
+                var match = data.match(new RegExp(term, 'g'));
+                if(match !== null && match.length > 0){
+                    fileResults.push({ file: item, count : match.length });
+                }
+
+                clb();
+            })
+        }, function () { 
+            var response = { title: 'Node Async Search', term: term, results: fileResults };
+            cache.put(term, response, 600);
+            callback(null, response);   
+        })
     })
 }
 
