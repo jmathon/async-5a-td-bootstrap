@@ -13,6 +13,8 @@ var sayHello = function(term, callback) {
     callback(null, result);
 }
 
+
+
 var searchInFiles = function (term, callback) {
     var dirPath = 'contents/files/rfc';
     var fileResults = [];
@@ -21,28 +23,44 @@ var searchInFiles = function (term, callback) {
         return;
     }
 
+    var dequeueFiles = function (queue, callback) {
+        readFiles(queue.term, queue.fileName, queue.filePath, queue.fileResults, queue.lastElement, queue.callback, callback)
+    }
+
+    var readFiles = function (term, fileName, filePath, fileResults, lastElement, callback, nextCallback) {
+        fs.readFile(filePath, 'utf-8', function (err, data) {
+            if(err) throw err;
+
+            var match = data.match(new RegExp(term, 'g'));
+            if(match !== null && match.length > 0){
+                fileResults.push({ file: fileName, count : match.length });
+            }
+
+            
+            if(lastElement) {
+                var response = { title: 'Node Async Search', term: term, results: fileResults };
+                cache.put(term, response, 200);
+                callback(null, response);  
+            }
+
+            nextCallback();
+        })
+    }
+
+    var queue = async.queue(dequeueFiles, 5);
+
     fs.readdir(dirPath, function (err, files) {
         if(err) throw err;
 
-        files.forEach (function (file) {
-            var filePath = path.join(dirPath, file);
-            var results = []
-            fs.readFile(filePath, 'utf-8', function (err, data) {
-                if(err) throw err;
+        
 
-                var match = data.match(new RegExp(term, 'g'));
-                if(match !== null && match.length > 0){
-                    fileResults.push({ file: file, count : match.length });
-                }
-
-                
-                if((files.length - 1) === files.indexOf(file)) {
-                    var response = { title: 'Node Async Search', term: term, results: fileResults };
-                    cache.put(term, response, 200);
-                    callback(null, response);  
-                } 
-            })
+        var enqueue = [];
+        files.forEach (function (item) {
+            var filePath = path.join(dirPath, item);
+            enqueue.push({ term: term, fileName: item, filePath: filePath, fileResults: fileResults, lastElement: (files.length - 1) === files.indexOf(item), callback: callback });
         })
+
+        queue.push(enqueue);
     })
 }
 
