@@ -3,6 +3,7 @@ var fs = require('fs'),
     cache = require('memory-cache'),
     ZipStream = require('zip-stream');
     path = require('path');
+    events = require('events');
 
 var sayHello = function(term, callback) {
     var result = {
@@ -25,9 +26,10 @@ var searchInFiles = function (term, callback) {
         return;
     }
     if(elementDictionary[term] !== undefined) {
-        elementDictionary[term].push(callback);
+        elementDictionary[term].once('final', callback);
     } else {
-        elementDictionary[term] = [callback];
+        elementDictionary[term] = new events.EventEmitter();
+        elementDictionary[term].once('final', callback);
 
         
         fs.readdir(dirPath, function (err, files) {
@@ -48,9 +50,10 @@ var searchInFiles = function (term, callback) {
             }, function () { 
                 var response = { title: 'Node Async Search', term: term, results: fileResults };
                 cache.put(term, response, 600);
-                elementDictionary[term].forEach(function(item) {
-                    item(null, response);   
-                })
+                //elementDictionary[term].forEach(function(item) {
+                //    item(null, response);   
+                //})
+                elementDictionary[term].emit('final', null, response);
                 delete elementDictionary[term];
             })
         })
@@ -98,6 +101,10 @@ module.exports = {
         return searchInFiles(term, function (err, data) {
             zipFile(data, callback);
         });
+    },
+
+    addFile: function (url, callback) {
+
     }
 
 };

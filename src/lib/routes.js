@@ -24,6 +24,13 @@ var download = function(req, res) {
     });
 };
 
+var addFile = function (req, res) {
+    var url = req.url;
+    return controller.addFile(url, function (err, result) {
+        // do something
+    })
+};
+
 var apiKeys = ['8cf1a2c0-26ff-479d-b271-c31a316a3bfc'];
 
 function error(status, msg) {
