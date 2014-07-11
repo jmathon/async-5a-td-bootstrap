@@ -39,7 +39,7 @@ var searchInFiles = function (term, callback) {
             
             if(lastElement) {
                 var response = { title: 'Node Async Search', term: term, results: fileResults };
-                cache.put(term, response, 200);
+                cache.put(term, response, 600);
                 callback(null, response);  
             }
 
