@@ -40,6 +40,29 @@ var searchInFiles = function (term, callback) {
     })
 }
 
+var zipFile = function (data, callback) {
+    var dirPath = 'contents/files/rfc';
+    if(data != null) {
+        var results = data.results;
+
+        var zip = new ZipStream();
+
+        async.eachSeries(results, function (entry, clb) {
+            var filePath = path.join(dirPath, entry.file);
+            var zipEntry = fs.createReadStream(filePath);
+            console.log(entry);
+            var name = entry.file;
+            zip.entry(zipEntry, { name: name }, function(err, test) {
+                clb();
+            });
+        }, function (err) {
+            console.log('finalize');
+            zip.finalize();
+            callback(null, zip);
+        });
+    }
+}
+
 // List all existings files (internal)
 var listFiles = function(folderPath, callback) {};
 
@@ -57,7 +80,9 @@ module.exports = {
     },
 
     download: function(term, callback) {
-        return callback(null, null);
+        return searchInFiles(term, function (err, data) {
+            zipFile(data, callback);
+        });
     }
 
 };
