@@ -16,6 +16,10 @@ var sayHello = function(term, callback) {
 var searchInFiles = function (term, callback) {
     var dirPath = 'contents/files/rfc';
     var fileResults = [];
+    if(cache.get(term) != null) {
+        callback(null, cache.get(term));
+        return;
+    }
 
     fs.readdir(dirPath, function (err, files) {
         if(err) throw err;
@@ -33,7 +37,9 @@ var searchInFiles = function (term, callback) {
 
                 
                 if((files.length - 1) === files.indexOf(file)) {
-                    callback(null, { title: 'Node Async Search', term: term, results: fileResults });  
+                    var response = { title: 'Node Async Search', term: term, results: fileResults };
+                    cache.put(term, response, 200);
+                    callback(null, response);  
                 } 
             })
         })
@@ -50,13 +56,11 @@ var zipFile = function (data, callback) {
         async.eachSeries(results, function (entry, clb) {
             var filePath = path.join(dirPath, entry.file);
             var zipEntry = fs.createReadStream(filePath);
-            console.log(entry);
             var name = entry.file;
             zip.entry(zipEntry, { name: name }, function(err, test) {
                 clb();
             });
         }, function (err) {
-            console.log('finalize');
             zip.finalize();
             callback(null, zip);
         });
