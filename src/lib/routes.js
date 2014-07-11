@@ -11,7 +11,12 @@ var hello = function(req, res) {
 };
 
 var search = function(req, res) {
-	// Do Search
+    var term = req.term;
+
+    console.log(term)
+	return controller.search(term, function (err, result) {
+        res.json(200, result);
+    });
 };
 
 var download = function(req, res) {
@@ -29,5 +34,7 @@ module.exports = function(app) {
     });
 
     app.get('/hello/:term?', hello);
+    app.get('/search/:term?', search)
+    app.get('/download/:term?', download)
     
 };
